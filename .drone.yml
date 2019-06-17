@@ -1,0 +1,53 @@
+workspace:
+  base: /go
+  path: src/github.com/leonenkoa/nginx-prometheus
+
+branches: master
+
+pipeline:
+  test:
+    image: docker.affisecorp.com/library/gobuilder:1.12.1
+    commands:
+      - make lint-all
+    environment:
+      - GO111MODULE=on
+
+  build:
+    image: docker.affisecorp.com/library/gobuilder:1.12.1
+    commands:
+      - make linux
+    when:
+      event: [tag, push]
+
+  build_postback_master_image:
+    image: docker
+    commands:
+      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker.affisecorp.com
+      - "docker build --rm -f Dockerfile -t docker.affisecorp.com/library/nginx-prometheus:latest ."
+      - "docker push docker.affisecorp.com/library/nginx-prometheus:latest"
+      - "docker rmi docker.affisecorp.com/library/nginx-prometheus:latest"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    secrets: [ docker_username, docker_password ]
+    when:
+      event: [push]
+
+  build_postback_image:
+    image: docker
+    commands:
+      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker.affisecorp.com
+      - "docker build --rm -f Dockerfile -t docker.affisecorp.com/library/nginx-prometheus:${DRONE_TAG##v} ."
+      - "docker push docker.affisecorp.com/library/nginx-prometheus:${DRONE_TAG##v}"
+      - "docker rmi docker.affisecorp.com/library/nginx-prometheus:${DRONE_TAG##v}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    secrets: [ docker_username, docker_password ]
+    when:
+      event: [tag]
+
+  slack:
+    image: plugins/slack
+    channel: ci
+    webhook: https://hooks.slack.com/services/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
+    when:
+      status: [ success, failure ]
