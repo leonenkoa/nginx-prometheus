@@ -3,8 +3,6 @@
 [![Build Status](https://travis-ci.org/blind-oracle/nginx-prometheus.svg?branch=master)](https://travis-ci.org/blind-oracle/nginx-prometheus)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/avelino/awesome-go)
 
-##### test
-
 # Nginx log parser and Prometheus exporter
 This service parses incoming syslog messages from Nginx sent over UDP and converts them into Prometheus metrics exported through the built-in HTTP server.
 
