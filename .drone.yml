@@ -30,43 +30,36 @@ steps:
     - master
     - feature/*
 
-- name: build_postback_master_image
+- name: build_master_image
   image: docker
   settings:
-    docker_username:
+    registry: docker.affisecorp.com
+    repo: docker.affisecorp.com/library/nginx-prometheus
+    auto_tag: false
+    purge: true
+    insecure: true
+    username:
       from_secret: docker_username
-    docker_password:
+    password:
       from_secret: docker_password
-  commands:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker.affisecorp.com
-  - "docker build --rm -f Dockerfile -t docker.affisecorp.com/library/nginx-prometheus:latest ."
-  - "docker push docker.affisecorp.com/library/nginx-prometheus:latest"
-  - "docker rmi docker.affisecorp.com/library/nginx-prometheus:latest"
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
   when:
     event:
     - push
     branch:
     - master
-    - feature/*
 
-- name: build_postback_image
-  image: docker
+- name: build_release_image
+  image: plugins/docker
   settings:
-    docker_username:
+    registry: docker.affisecorp.com
+    repo: docker.affisecorp.com/library/nginx-prometheus
+    auto_tag: true
+    purge: true
+    insecure: true
+    username:
       from_secret: docker_username
-    docker_password:
+    password:
       from_secret: docker_password
-  commands:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker.affisecorp.com
-  - "docker build --rm -f Dockerfile -t docker.affisecorp.com/library/nginx-prometheus:${DRONE_TAG##v} ."
-  - "docker push docker.affisecorp.com/library/nginx-prometheus:${DRONE_TAG##v}"
-  - "docker rmi docker.affisecorp.com/library/nginx-prometheus:${DRONE_TAG##v}"
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
   when:
     event:
     - tag
@@ -77,14 +70,10 @@ steps:
 - name: slack
   image: plugins/slack
   settings:
-    room: ci
+    channel: ci
     webhook: https://hooks.slack.com/services/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
-    when:
-      status:
-      - success
-      - failure
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
+    image_url: https://picsum.photos/id/406/256/256
+  when:
+    status:
+    - success
+    - failure
