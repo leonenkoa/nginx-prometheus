@@ -21,6 +21,7 @@ steps:
 - name: build
   image: docker.affisecorp.com/library/gobuilder:1.12.1
   commands:
+  - dep ensure
   - GOOS=linux GOARCH=amd64 go build -o nginx-prometheus-linux-amd64 -ldflags "-s -w" main.go
   when:
     event:
