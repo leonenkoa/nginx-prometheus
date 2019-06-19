@@ -21,10 +21,8 @@ steps:
 - name: build
   image: docker.affisecorp.com/library/gobuilder:1.12.1
   commands:
-  - go get github.com/blind-oracle/nginx-prometheus
-  - cd $GOPATH/src/github.com/blind-oracle/nginx-prometheus
   - dep ensure
-  - GOOS=linux GOARCH=amd64 go build -o nginx-prometheus-linux-amd64
+  - go build -o nginx-prometheus-linux-amd64
   when:
     event:
     - tag
