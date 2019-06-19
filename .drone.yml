@@ -9,14 +9,8 @@ workspace:
 steps:
 - name: test
   image: docker.affisecorp.com/library/gobuilder:1.12.1
-  settings:
-    registry: docker.affisecorp.com
-    insecure: true
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
   commands:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker.affisecorp.com
   - go test ./...
   environment:
     GO111MODULE: on
@@ -27,13 +21,6 @@ steps:
 
 - name: build
   image: docker.affisecorp.com/library/gobuilder:1.12.1
-  settings:
-    registry: docker.affisecorp.com
-    insecure: true
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
   commands:
   - GOOS=linux GOARCH=amd64 go build -o nginx-prometheus-linux-amd64 -ldflags "-s -w" main.go
   when:
@@ -45,7 +32,7 @@ steps:
     - feature/*
 
 - name: build_master_image
-  image: docker
+  image: plugins/docker
   settings:
     registry: docker.affisecorp.com
     repo: docker.affisecorp.com/library/nginx-prometheus
@@ -91,3 +78,6 @@ steps:
     status:
     - success
     - failure
+
+image_pull_secrets:
+  - dockerconfigjson
